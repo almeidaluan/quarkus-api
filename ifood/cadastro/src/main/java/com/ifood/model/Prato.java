@@ -1,12 +1,14 @@
 package com.ifood.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import org.eclipse.microprofile.opentracing.Traced;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "PRATO")
+@Traced
 public class Prato extends PanacheEntityBase {
 
     @Id

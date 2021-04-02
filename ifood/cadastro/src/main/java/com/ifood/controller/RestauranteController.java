@@ -84,7 +84,7 @@ public class RestauranteController {
     @POST
     @Transactional
     public Response cadastro(AdicionarRestauranteRequest request){
-
+        this.restauranteRepository.listAll();
         this.restauranteService.CadastrarRestaurante(request);
         return Response.status(Response.Status.CREATED).build();
     }
