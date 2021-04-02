@@ -11,6 +11,10 @@ import com.ifood.model.request.RestauranteRequest;
 import com.ifood.repository.PratoRepository;
 import com.ifood.repository.RestauranteManager;
 import com.ifood.repository.RestauranteRepository;
+import com.ifood.service.IRestauranteService;
+import io.quarkus.security.User;
+import io.quarkus.security.identity.SecurityIdentity;
+import io.smallrye.jwt.auth.principal.DefaultJWTCallerPrincipal;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.security.OAuthFlow;
 import org.eclipse.microprofile.openapi.annotations.security.OAuthFlows;
@@ -25,7 +29,9 @@ import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Path("/restaurantes")
@@ -43,19 +49,32 @@ public class RestauranteController {
 
     private PratoRepository pratoRepository;
 
+    private IRestauranteService restauranteService;
+
+    @Inject
+    SecurityIdentity identity;
+
     @Inject
     private RestauranteMapper restauranteMapper;
 
+
+
     @Inject
-    public RestauranteController(RestauranteRepository restauranteRepository, RestauranteManager restauranteManager, PratoRepository pratoRepository){
-    this.restauranteRepository = restauranteRepository;
-    this.restauranteManager = restauranteManager;
-    this.pratoRepository = pratoRepository;
+    public RestauranteController(RestauranteRepository restauranteRepository, RestauranteManager restauranteManager, PratoRepository pratoRepository, IRestauranteService restauranteService ){
+        this.restauranteRepository = restauranteRepository;
+        this.restauranteManager = restauranteManager;
+        this.pratoRepository = pratoRepository;
+        this.restauranteService = restauranteService;
 
     }
 
     @GET
     public List<BuscarRestauranteDto> buscar(){
+
+        System.out.println(identity.getPrincipal().getName());
+        System.out.println(identity.getRoles());
+        DefaultJWTCallerPrincipal o = (DefaultJWTCallerPrincipal)identity.getAttributes().get("quarkus.user");
+        System.out.print(o.claim("email"));
 
         List<Restaurante> restaurantes = this.restauranteRepository.listAll();
 
@@ -66,9 +85,7 @@ public class RestauranteController {
     @Transactional
     public Response cadastro(AdicionarRestauranteRequest request){
 
-        Restaurante restaurante = this.restauranteMapper.toRestaurante(request);
-
-        this.restauranteRepository.persist(restaurante);
+        this.restauranteService.CadastrarRestaurante(request);
         return Response.status(Response.Status.CREATED).build();
     }
 
